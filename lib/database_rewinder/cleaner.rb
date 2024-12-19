@@ -25,14 +25,14 @@ module DatabaseRewinder
       # In this case, we have to reconnect to the database to clean inserted
       # tables.
       with_automatic_reconnect(pool) do
-        delete_all (ar_conn = pool.connection), DatabaseRewinder.all_table_names(ar_conn) & inserted_tables, multiple: multiple
+        delete_all (ar_conn = connection), DatabaseRewinder.all_table_names(ar_conn) & inserted_tables, multiple: multiple
       end
       reset
     end
 
     def clean_all(multiple: true)
       if pool
-        ar_conn = pool.connection
+        ar_conn = connection
         delete_all ar_conn, DatabaseRewinder.all_table_names(ar_conn), multiple: multiple
       else
         require 'database_rewinder/dummy_model'
@@ -45,6 +45,15 @@ module DatabaseRewinder
     end
 
     private
+
+    def connection
+      if pool.respond_to?(:lease_connection)
+        pool.lease_connection
+      else
+        pool.connection
+      end
+    end
+
     def delete_all(ar_conn, tables, multiple: true)
       tables = tables & @only if @only.any?
       tables -= @except if @except.any?

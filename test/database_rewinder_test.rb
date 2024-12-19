@@ -214,7 +214,7 @@ class DatabaseRewinder::DatabaseRewinderTest < ActiveSupport::TestCase
           schema_migration = if ActiveRecord::VERSION::MAJOR >= 8
             ActiveRecord::SchemaMigration.new(ActiveRecord::Base.connection_pool)
           else
-            ActiveRecord::SchemaMigration.new(ActiveRecord::Base.connection)
+            ActiveRecord::SchemaMigration.new(ActiveRecord::Base.lease_connection)
           end
           schema_migration.create_table
 
